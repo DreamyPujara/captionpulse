@@ -1,0 +1,17 @@
+{
+  "reference": ["hello", "world", "again"],
+  "events": [
+    {"emitted_ms": 250, "text": "helo", "final": false},
+    {"emitted_ms": 420, "text": "hello wor", "final": false},
+    {
+      "emitted_ms": 900,
+      "text": "hello word again",
+      "final": true,
+      "words": [
+        {"word": "hello", "end_ms": 300},
+        {"word": "word", "end_ms": 620},
+        {"word": "again", "end_ms": 760}
+      ]
+    }
+  ]
+}
