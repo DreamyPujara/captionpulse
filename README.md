@@ -10,6 +10,7 @@ When a caption demo feels bad, it is hard to tell whether the issue is word mist
 
 ```bash
 python tool.py examples/tiny_caption_session.json
+python tool.py examples/tiny_caption_session.json --format markdown
 ```
 
 Output includes:
@@ -17,6 +18,7 @@ Output includes:
 - `word_error_rate` plus alignment evidence for each equal/substitute/delete/insert decision
 - `partial_revision_count` for changed non-final captions before finalization
 - `display_delay_ms` p50, p90, max, and sample count from final word end times
+- deterministic JSON by default, or a compact Markdown report for sharing in notes
 
 ## Input shape
 
@@ -26,7 +28,7 @@ Output includes:
 
 ## Metrics
 
-WER is `(substitutions + deletions + insertions) / reference_word_count`. Percentiles use linear interpolation over delay samples. If no reference words or delay samples exist, the relevant value is `null`.
+WER is `(substitutions + deletions + insertions) / reference_word_count`. Percentiles use linear interpolation over delay samples. If no reference words or delay samples exist, the relevant value is `null` in JSON and `n/a` in Markdown.
 
 ## Tradeoffs and non-goals
 

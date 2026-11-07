@@ -110,14 +110,66 @@ def analyze(doc):
     }
 
 
+def fmt(value):
+    if value is None:
+        return "n/a"
+    if isinstance(value, float):
+        return f"{value:.3f}".rstrip("0").rstrip(".")
+    return str(value)
+
+
+def render_markdown(report):
+    delay = report["display_delay_ms"]
+    counts = report["error_counts"]
+    lines = [
+        "# CaptionPulse Report",
+        "",
+        "## Summary",
+        "",
+        f"- Reference words: {report['reference_word_count']}",
+        f"- Final caption words: {report['final_word_count']}",
+        f"- Word error rate: {fmt(report['word_error_rate'])}",
+        f"- Partial revision count: {report['partial_revision_count']}",
+        f"- Display delay samples: {delay['count']}",
+        f"- Display delay p50/p90/max ms: {fmt(delay['p50'])} / {fmt(delay['p90'])} / {fmt(delay['max'])}",
+        "",
+        "## Error counts",
+        "",
+        f"- Substitutions: {counts['substitutions']}",
+        f"- Deletions: {counts['deletions']}",
+        f"- Insertions: {counts['insertions']}",
+        "",
+        "## Alignment evidence",
+        "",
+        "| op | reference | caption |",
+        "| --- | --- | --- |",
+    ]
+    for item in report["alignment"]:
+        lines.append(f"| {item['op']} | {item['ref'] or ''} | {item['hyp'] or ''} |")
+    lines.extend([
+        "",
+        "## Assumptions and limitations",
+        "",
+        "- Input is a synthetic JSON fixture supplied by the developer.",
+        "- Final-word delays are computed as final event emitted_ms minus each supplied word end_ms.",
+        "- WER is text-only and does not evaluate audio or claim real-world caption accuracy.",
+        "- The tool runs offline and makes no network calls.",
+    ])
+    return "\n".join(lines) + "\n"
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Offline caption quality debugger")
     parser.add_argument("input_json", help="synthetic reference and caption events JSON")
+    parser.add_argument("--format", choices=("json", "markdown"), default="json")
     args = parser.parse_args(argv)
     with open(args.input_json, "r", encoding="utf-8") as f:
-        doc = json.load(f)
-    json.dump(analyze(doc), sys.stdout, indent=2, sort_keys=True)
-    sys.stdout.write("\n")
+        report = analyze(json.load(f))
+    if args.format == "markdown":
+        sys.stdout.write(render_markdown(report))
+    else:
+        json.dump(report, sys.stdout, indent=2, sort_keys=True)
+        sys.stdout.write("\n")
 
 
 if __name__ == "__main__":
